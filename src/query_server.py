@@ -76,7 +76,9 @@ def query():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+load_embeddings()
+
 if __name__ == '__main__':
     # Load embeddings when the server starts
-    load_embeddings()
     app.run(host='0.0.0.0', port=5000)

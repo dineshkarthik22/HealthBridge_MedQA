@@ -1,2 +1,7 @@
 requests>=2.31.0
 beautifulsoup4>=4.12.2
+sentence-transformers>=2.2.2
+datasets>=2.14.5
+flask>=2.3.3
+numpy>=1.24.3
+torch>=2.0.1
