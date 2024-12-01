@@ -11,6 +11,9 @@ You will also be provided a source for each context chunk, and if you use the co
 Give your answer in the format below:
 Answer: <answer>
 Sources: <sources>
+
+Finally, you have to make a decision about the patient. Do not recommend going to the doctor, as the patient already knows. If the patient's fears are irrational, then provide some nice words that can help the patient to calm down. If there could be something serious, list down a comprehensive set of measurements (i.e. lab work) you will need to further diagnose the patient.
+Only recommend a doctor visit if you believe the patient's life is in danger.
 """
 
 
@@ -47,8 +50,7 @@ def generate_response_for_subquery(subquery):
 def main():
     patient_idx = 1
     user_query_text = """
-    I did exercise and I am now facing chest pain. It is towards the middle of my chest. I also do not feel like eating anything, and feel nauseated if I eat.
-    I do not know what is happening to me, and I feel scared.
+    Can I take paracetamol?
     """
     subqueries = generate_subqueries(patient_idx, user_query_text)
     for subquery in subqueries:
