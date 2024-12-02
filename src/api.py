@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_restx import Api, Resource, fields
 from flask_cors import CORS  # import CORS
 from response_generator import generate_response_for_subquery, generate_subqueries, evaluate_response
+from scraper_and_chunker import process_cleveland_clinic_page
 import os
 
 app = Flask(__name__)
@@ -19,6 +20,11 @@ query_model = api.model('QueryModel', {
 persona_model = api.model('PersonaModel', {
     'name': fields.String(required=True, description='Patient name'),
     'data': fields.Raw(required=True, description='Patient persona data')
+})
+
+# Set URL model
+url_model = api.model('UrlModel', {
+    'database_url': fields.String(required=True, description='The URL to process')
 })
 
 # api for user query
@@ -168,6 +174,25 @@ class PatientPersona(Resource):
             
         except Exception as e:
             return {'error': str(e)}, 500
+
+
+# API for processing URL
+@api.route('/process-url')
+class UrlProcessor(Resource):
+    @api.expect(url_model)
+    def post(self):
+        data = request.json
+        url = data.get('database_url')
+
+        if url is None or url == '':
+            return {'message': 'URL is required'}, 400
+        
+        # Simulate URL processing
+        try:
+            output_file = process_cleveland_clinic_page(url)
+            return {'message': 'Successfully processed page.'}, 200
+        except Exception as e:
+            return {'message': 'Error processing page: '+ str(e)}, 500
 
 if __name__ == '__main__':
     app.run(debug=True)
