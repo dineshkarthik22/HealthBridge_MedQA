@@ -20,6 +20,27 @@ Only recommend a doctor visit if you believe the patient's life is in danger.
 client = ChatGPTClient()
 client.set_system_prompt(SYSTEM_PROMPT)
 
+evaluation_client = ChatGPTClient()
+evaluation_prompt = """
+You are an expert evaluator of AI-generated medical responses. Your task is to evaluate the given response based on the following criteria: correctness, precision, readability, comprehensiveness, and consistency. Provide a score for each criterion on a scale from 1 to 5, along with a brief explanation for each score.
+
+Response: <response>
+
+Evaluation:
+- Correctness: <score> - <explanation>
+- Precision: <score> - <explanation>
+- Readability: <score> - <explanation>
+- Comprehensiveness: <score> - <explanation>
+- Consistency: <score> - <explanation>
+"""
+
+def evaluate_response(response):
+    evaluation_client.set_system_prompt(evaluation_prompt)
+    evaluation_query = f"Response: {response}"
+    evaluation = evaluation_client.get_response(evaluation_query)
+    return evaluation
+
+
 TOP_K = 8
 
 def generate_subqueries(patient_idx, user_query_text):
@@ -55,11 +76,13 @@ def main():
     subqueries = generate_subqueries(patient_idx, user_query_text)
     for subquery in subqueries:
         response = generate_response_for_subquery(subquery)
+        evaluation = evaluate_response(response)
         print("Subquery:", subquery)
         print(response)
+        # print("Evaluation:")
+        print(evaluation)
         print("\n\n\n")
     
 
 if __name__ == "__main__":
     main()
-
