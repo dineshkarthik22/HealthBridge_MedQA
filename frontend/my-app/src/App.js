@@ -1,45 +1,59 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import PDFUpload from './components/PDFUpload';
 import UploadDatabase from './components/UploadDatabase';
 import VoiceInputWithResponse from './components/VoiceInputWithResponse';
 import PatientPersonaForm from './components/PatientPersonaForm';
+import DocumentManagement from './components/DocumentManagement';
 import './App.css';
+
+const Navigation = () => (
+  <nav className="main-nav">
+    <div className="nav-brand">
+      <h2>HealthBridge MedQA</h2>
+    </div>
+    <div className="nav-links">
+      <NavLink to="/" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} end>
+        Home
+      </NavLink>
+      <NavLink to="/documents" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+        Documents
+      </NavLink>
+      <NavLink to="/add-persona" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+        Add Patient
+      </NavLink>
+    </div>
+  </nav>
+);
 
 const Home = () => (
   <div className="App">
-    <header className="App-header">
-      <h1>Medical Q&A</h1>
-      
-      <div className="component-container">
-        <PDFUpload />
+    <div className="main-content">
+      <div className="page-header">
+        <h1>Medical Q&A Interface</h1>
+        <p>Ask questions and get AI-powered medical insights</p>
       </div>
-
-      <div className="component-container">
-        <UploadDatabase />
+      <div className="qa-section">
+        <div className="card main-qa-card">
+          <VoiceInputWithResponse />
+        </div>
       </div>
-      
-      <div className="component-container">
-        <VoiceInputWithResponse />
-      </div>
-
-      <div className="component-container">
-        <Link to="/add-persona" className="add-persona-button">
-          Add New Patient Persona
-        </Link>
-      </div>
-    </header>
+    </div>
   </div>
 );
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/add-persona" element={<PatientPersonaForm />} />
-      </Routes>
+      <div className="app-container">
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/documents" element={<DocumentManagement />} />
+          <Route path="/add-persona" element={<PatientPersonaForm />} />
+        </Routes>
+      </div>
     </Router>
   );
 }
