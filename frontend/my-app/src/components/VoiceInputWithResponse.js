@@ -6,6 +6,7 @@ const VoiceInputWithResponse = () => {
   const [inputText, setInputText] = useState('');
   const [editableText, setEditableText] = useState('');
   const [response, setResponse] = useState('');
+  const [evaluation, setEvaluation] = useState(''); // 新增状态来存储 evaluation
   const [loading, setLoading] = useState(false);
 
   const handleTextSubmit = (text) => {
@@ -23,12 +24,14 @@ const VoiceInputWithResponse = () => {
 
       const res = await axios.post('http://127.0.0.1:5000/query', requestBody);
 
-      
-      const { subquery, response } = res.data.message[0]; 
-      setResponse(`Subquery: ${subquery}\nResponse: ${response}`); 
+      // 提取子查询、响应和评估
+      const { subquery, response: apiResponse, evaluation: apiEvaluation } = res.data.message[0];
+      setResponse(apiResponse); // 直接设置响应
+      setEvaluation(apiEvaluation); // 设置评估
     } catch (error) {
       console.error('Error fetching response:', error);
       setResponse('Error fetching response.');
+      setEvaluation(''); // 发生错误时清空评估
     } finally {
       setLoading(false);
     }
@@ -76,8 +79,12 @@ const VoiceInputWithResponse = () => {
       </div>
       <button onClick={handleSubmit}>Submit</button>
       <h3>LLM Response:</h3>
-      <div className="response-container"> {/* new CSS  */}
+      <div className="response-container">
         {loading ? <p>Loading...</p> : <pre>{response || "No response yet. Waiting..."}</pre>}
+      </div>
+      <h3>Evaluation:</h3> {/* add evaluation*/}
+      <div className="response-container">
+        <pre>{evaluation || "No evaluation available."}</pre> {/* evaluation */}
       </div>
     </div>
   );

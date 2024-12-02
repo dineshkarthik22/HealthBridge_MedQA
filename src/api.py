@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_restx import Api, Resource, fields
 from flask_cors import CORS  # import CORS
-from response_generator import generate_response_for_subquery, generate_subqueries
+from response_generator import generate_response_for_subquery, generate_subqueries, evaluate_response
 app = Flask(__name__)
 CORS(app)  #use CORS
 api = Api(app, version='1.0', title='Patient Query API',
@@ -29,7 +29,8 @@ class UserQuery(Resource):
         responses = []
         for subquery in subqueries:
             response = generate_response_for_subquery(subquery)
-            responses.append({'subquery': subquery, 'response': response})
+            evaluation = evaluate_response(response)
+            responses.append({'subquery': subquery, 'response': response, 'evaluation':  evaluation})
     
 
         #responses = "succeed"  # sample
