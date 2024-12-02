@@ -1,36 +1,43 @@
-// src/components/VoiceInputWithResponse.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../App.css';
 
 const VoiceInputWithResponse = () => {
   const [inputText, setInputText] = useState('');
+  const [editableText, setEditableText] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleTextSubmit = async (text) => {
+  const handleTextSubmit = (text) => {
     setInputText(text);
+    setEditableText(text);
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const requestBody = {
+        patient_id: 1,
+        query: editableText
+      };
+
+      const res = await axios.post('http://127.0.0.1:5000/query', requestBody);
+
+      
+      const { subquery, response } = res.data.message[0]; 
+      setResponse(`Subquery: ${subquery}\nResponse: ${response}`); 
+    } catch (error) {
+      console.error('Error fetching response:', error);
+      setResponse('Error fetching response.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchResponse = async () => {
-      if (inputText) {
-        setLoading(true);
-        try {
-          const res = await axios.post('https://api.example.com/query-llm', { input: inputText });
-          setResponse(res.data.response);
-        } catch (error) {
-          console.error('Error fetching LLM response:', error);
-          setResponse('Error fetching response.');
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setResponse(''); 
-      }
-    };
-
-    fetchResponse();
+    if (inputText) {
+      setEditableText(inputText);
+    }
   }, [inputText]);
 
   const startVoiceInput = () => {
@@ -40,7 +47,7 @@ const VoiceInputWithResponse = () => {
 
     recognition.onresult = (event) => {
       const speechToText = event.results[0][0].transcript;
-      handleTextSubmit(speechToText); 
+      handleTextSubmit(speechToText);
     };
 
     recognition.onerror = (event) => {
@@ -58,12 +65,19 @@ const VoiceInputWithResponse = () => {
     <div>
       <h3>Voice Input</h3>
       <button onClick={startVoiceInput}>Start Voice Input</button>
-      <div className="recognized-text">
-        <p>Input: {inputText || "No input yet."}</p>
+      <div className="recognized-text centered-text">
+        <h4>Input:</h4>
+        <textarea
+          value={editableText}
+          onChange={(e) => setEditableText(e.target.value)}
+          rows="4"
+          cols="50"
+        />
       </div>
+      <button onClick={handleSubmit}>Submit</button>
       <h3>LLM Response:</h3>
-      <div className="recognized-text">
-        {loading ? <p>Loading...</p> : <p>{response || "No response yet. Waiting..."}</p>}
+      <div className="response-container"> {/* new CSS  */}
+        {loading ? <p>Loading...</p> : <pre>{response || "No response yet. Waiting..."}</pre>}
       </div>
     </div>
   );

@@ -52,3 +52,27 @@ button:hover {
   margin-top: 10px; 
   text-align: left; 
 }
+
+.response-text {
+  font-size: 1rem; 
+  color: #0000; 
+  margin-top: 10px; 
+  text-align: left; 
+}
+
+/* App.css */
+.centered-text {
+  text-align: center;  
+  margin: 20px 0;     
+}
+
+.response-container {
+  max-height: 200px;    
+  overflow-y: auto;     
+  overflow-x: auto;    
+  border: 1px solid #ccc; 
+  padding: 10px;        
+  background-color: #f9f9f9; 
+  color: black;         
+  font-size: 14px; 
+}
