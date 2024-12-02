@@ -1,25 +1,21 @@
 from flask import Flask, request, jsonify
 from flask_restx import Api, Resource, fields
 from flask_cors import CORS  # import CORS
+import os
+import json
+
 from response_generator import generate_response_for_subquery, generate_subqueries, evaluate_response
 from scraper_and_chunker import process_cleveland_clinic_page
-import os
 
 app = Flask(__name__)
-CORS(app)  #use CORS
+CORS(app)  # Use CORS
 api = Api(app, version='1.0', title='Patient Query API',
           description='A simple API to handle patient queries')
 
-# set query model
+# Set query model
 query_model = api.model('QueryModel', {
     'patient_id': fields.Integer(required=True, description='The ID of the patient'),
     'query': fields.String(required=True, description='The query text')
-})
-
-# set persona model
-persona_model = api.model('PersonaModel', {
-    'name': fields.String(required=True, description='Patient name'),
-    'data': fields.Raw(required=True, description='Patient persona data')
 })
 
 # Set URL model
@@ -27,7 +23,13 @@ url_model = api.model('UrlModel', {
     'database_url': fields.String(required=True, description='The URL to process')
 })
 
-# api for user query
+# Set Patient Persona model
+patient_persona_model = api.model('PatientPersonaModel', {
+    'name': fields.String(required=True, description='Patient name'),
+    'data': fields.Raw(required=True, description='Patient data')
+})
+
+# API for user query
 @api.route('/query')
 class UserQuery(Resource):
     @api.expect(query_model)
@@ -44,137 +46,9 @@ class UserQuery(Resource):
         for subquery in subqueries:
             response = generate_response_for_subquery(subquery)
             evaluation = evaluate_response(response)
-            responses.append({'subquery': subquery, 'response': response, 'evaluation':  evaluation})
-    
+            responses.append({'subquery': subquery, 'response': response, 'evaluation': evaluation})
 
-        #responses = "succeed"  # sample
         return {'message': responses}, 200
-
-# api for patient persona
-@api.route('/api/save-persona')
-class PatientPersona(Resource):
-    @api.expect(persona_model)
-    def post(self):
-        try:
-            data = request.json
-            patient_name = data.get('name')
-            persona_data = data.get('data')
-            
-            if not patient_name or not persona_data:
-                return {'error': 'Missing required data'}, 400
-
-            # Create the formatted content
-            content = []
-            content.append("1. Basic Demographics:")
-            content.append(f"- Age: {persona_data['demographics']['age']}")
-            content.append(f"- Sex: {persona_data['demographics']['sex']}")
-            content.append(f"- Weight: {persona_data['demographics']['weight']}")
-            content.append(f"- Height: {persona_data['demographics']['height']}")
-            content.append(f"- Ethnicity: {persona_data['demographics']['ethnicity']}")
-            content.append(f"- Occupation: {persona_data['demographics']['occupation']}")
-            content.append("")
-
-            content.append("2. Medical History:")
-            content.append(f"- Chronic conditions: {persona_data['medicalHistory']['chronicConditions']}")
-            content.append(f"- Previous surgeries: {persona_data['medicalHistory']['previousSurgeries']}")
-            content.append(f"- Hospitalizations: {persona_data['medicalHistory']['hospitalizations']}")
-            content.append(f"- Injuries: {persona_data['medicalHistory']['injuries']}")
-            content.append(f"- Allergies: {persona_data['medicalHistory']['allergies']}")
-            content.append(f"- Mental health conditions: {persona_data['medicalHistory']['mentalHealthConditions']}")
-            content.append("")
-
-            content.append("3. Medication Details:")
-            content.append(f"- Current medications: {persona_data['medications']['current']}")
-            content.append(f"- Dosages and frequency: {persona_data['medications']['dosages']}")
-            content.append(f"- Past medications: {persona_data['medications']['past']}")
-            content.append(f"- Drug interactions or known sensitivities: {persona_data['medications']['interactions']}")
-            content.append("")
-
-            content.append("4. Lifestyle Factors:")
-            content.append(f"- Dietary habits: {persona_data['lifestyle']['diet']}")
-            content.append(f"- Exercise routine: {persona_data['lifestyle']['exercise']}")
-            content.append(f"- Sleep patterns: {persona_data['lifestyle']['sleep']}")
-            content.append(f"- Alcohol use: {persona_data['lifestyle']['alcohol']}")
-            content.append(f"- Tobacco use: {persona_data['lifestyle']['tobacco']}")
-            content.append(f"- Recreational drug use: {persona_data['lifestyle']['drugs']}")
-            content.append("")
-
-            content.append("5. Family Medical History:")
-            content.append(f"- Genetic conditions: {persona_data['familyHistory']['genetic']}")
-            content.append(f"- Family history of chronic illnesses: {persona_data['familyHistory']['chronic']}")
-            content.append("")
-
-            content.append("6. Immunization Status:")
-            content.append(f"- Vaccination history: {persona_data['immunization']['history']}")
-            content.append(f"- Recent vaccinations: {persona_data['immunization']['recent']}")
-            content.append(f"- Travel history and vaccines related to travel: {persona_data['immunization']['travel']}")
-            content.append("")
-
-            content.append("7. Symptoms/Presenting Concerns:")
-            content.append(f"- Primary complaint: {persona_data['symptoms']['primary']}")
-            content.append(f"- Duration of symptoms: {persona_data['symptoms']['duration']}")
-            content.append(f"- Severity of symptoms: {persona_data['symptoms']['severity']}")
-            content.append(f"- Associated symptoms: {persona_data['symptoms']['associated']}")
-            content.append(f"- Pain level: {persona_data['symptoms']['painLevel']}")
-            content.append("")
-
-            content.append("8. Vital Signs:")
-            content.append(f"- Blood pressure: {persona_data['vitals']['bloodPressure']}")
-            content.append(f"- Heart rate: {persona_data['vitals']['heartRate']}")
-            content.append(f"- Body temperature: {persona_data['vitals']['temperature']}")
-            content.append(f"- Respiratory rate: {persona_data['vitals']['respiratoryRate']}")
-            content.append("")
-
-            content.append("9. Test Results:")
-            content.append(f"- Recent blood tests: {persona_data['testResults']['blood']}")
-            content.append(f"- Imaging results: {persona_data['testResults']['imaging']}")
-            content.append(f"- Urine/stool analysis: {persona_data['testResults']['urineStool']}")
-            content.append(f"- Other diagnostic results: {persona_data['testResults']['other']}")
-            content.append("")
-
-            content.append("10. Allergies/Sensitivities:")
-            content.append(f"- Food allergies: {persona_data['allergiesSensitivities']['food']}")
-            content.append(f"- Environmental allergens: {persona_data['allergiesSensitivities']['environmental']}")
-            content.append(f"- Drug allergies: {persona_data['allergiesSensitivities']['drug']}")
-            content.append("")
-
-            content.append("11. Reproductive Health:")
-            content.append(f"- Pregnancy status: {persona_data['reproductive']['pregnancy']}")
-            content.append(f"- Menstrual cycle details: {persona_data['reproductive']['menstrual']}")
-            content.append(f"- Contraception use: {persona_data['reproductive']['contraception']}")
-            content.append(f"- Fertility concerns: {persona_data['reproductive']['fertility']}")
-            content.append("")
-
-            content.append("12. Mental and Cognitive Health:")
-            content.append(f"- Mood changes: {persona_data['mentalHealth']['mood']}")
-            content.append(f"- Memory issues: {persona_data['mentalHealth']['memory']}")
-            content.append(f"- Cognitive impairments: {persona_data['mentalHealth']['cognitive']}")
-            content.append(f"- Stress and anxiety levels: {persona_data['mentalHealth']['stress']}")
-            content.append("")
-
-            content.append("13. Social and Environmental Factors:")
-            content.append(f"- Living conditions: {persona_data['social']['living']}")
-            content.append(f"- Work environment: {persona_data['social']['work']}")
-            content.append(f"- Pets: {persona_data['social']['pets']}")
-            content.append("")
-
-            content.append("14. Insurance and Healthcare Preferences:")
-            content.append(f"- Insurance status: {persona_data['insurance']['status']}")
-            content.append(f"- Preferred healthcare facilities: {persona_data['insurance']['facilities']}")
-            content.append(f"- Past interactions with healthcare systems: {persona_data['insurance']['interactions']}")
-
-            # Save to file
-            os.makedirs('patient_persona', exist_ok=True)
-            file_path = os.path.join('patient_persona', f'patient_{patient_name}.txt')
-            
-            with open(file_path, 'w') as f:
-                f.write('\n'.join(content))
-            
-            return {'message': 'Patient persona saved successfully', 'file_path': file_path}, 200
-            
-        except Exception as e:
-            return {'error': str(e)}, 500
-
 
 # API for processing URL
 @api.route('/process-url')
@@ -186,13 +60,154 @@ class UrlProcessor(Resource):
 
         if url is None or url == '':
             return {'message': 'URL is required'}, 400
-        
-        # Simulate URL processing
+
+        # Here you would perform operations with the URL
         try:
             output_file = process_cleveland_clinic_page(url)
             return {'message': 'Successfully processed page.'}, 200
         except Exception as e:
-            return {'message': 'Error processing page: '+ str(e)}, 500
+            return {'message': 'Error processing page: ' + str(e)}, 500
 
+# API for saving patient persona
+'''
+@api.route('/save-patient-persona')
+class SavePatientPersona(Resource):
+    @api.expect(patient_persona_model)
+    def post(self):
+        data = request.json
+        name = data.get('name')
+        patient_data = data.get('data')
+
+        if not name or not patient_data:
+            return {'message': 'Name and patient data are required'}, 400
+
+        persona_folder = '../patient_persona'
+
+        if not os.path.exists(persona_folder):
+            os.makedirs(persona_folder)
+
+        files = os.listdir(persona_folder)
+        n = len(files) + 1  
+        file_name = f'patient_{n}.txt'
+        file_path = os.path.join(persona_folder, file_name)
+
+        with open(file_path, 'w') as file:
+            json.dump({'name': name, 'data': patient_data}, file, indent=2)
+
+        return {'message': 'Patient persona saved successfully!', 'file_path': file_path}, 200
+'''
+# API for saving patient persona
+@api.route('/save-patient-persona')
+class SavePatientPersona(Resource):
+    @api.expect(patient_persona_model)
+    def post(self):
+        data = request.json
+        name = data.get('name')
+        patient_data = data.get('data')
+
+        if not name or not patient_data:
+            return {'message': 'Name and patient data are required'}, 400
+
+        persona_folder = '../patient_persona'
+
+        if not os.path.exists(persona_folder):
+            os.makedirs(persona_folder)
+
+        files = os.listdir(persona_folder)
+        n = len(files) + 1  
+        file_name = f'patient_{n}.txt'
+        file_path = os.path.join(persona_folder, file_name)
+
+        # 生成所需的格式化字符串
+        content = f"1. Basic Demographics:\n"
+        content += f"- Age: {patient_data['demographics'].get('age', 'N/A')}\n"
+        content += f"- Sex: {patient_data['demographics'].get('sex', 'N/A')}\n"
+        content += f"- Weight: {patient_data['demographics'].get('weight', 'N/A')}\n"
+        content += f"- Height: {patient_data['demographics'].get('height', 'N/A')}\n"
+        content += f"- Ethnicity: {patient_data['demographics'].get('ethnicity', 'N/A')}\n"
+        content += f"- Occupation: {patient_data['demographics'].get('occupation', 'N/A')}\n\n"
+
+        content += f"2. Medical History:\n"
+        content += f"- Chronic conditions: {patient_data['medicalHistory'].get('chronicConditions', 'N/A')}\n"
+        content += f"- Previous surgeries: {patient_data['medicalHistory'].get('previousSurgeries', 'N/A')}\n"
+        content += f"- Hospitalizations: {patient_data['medicalHistory'].get('hospitalizations', 'N/A')}\n"
+        content += f"- Injuries: {patient_data['medicalHistory'].get('injuries', 'N/A')}\n"
+        content += f"- Allergies: {patient_data['medicalHistory'].get('allergies', 'N/A')}\n"
+        content += f"- Mental health conditions: {patient_data['medicalHistory'].get('mentalHealthConditions', 'N/A')}\n\n"
+
+        content += f"3. Medication Details:\n"
+        content += f"- Current medications: {patient_data['medications'].get('current', 'N/A')}\n"
+        content += f"- Dosages and frequency: {patient_data['medications'].get('dosages', 'N/A')}\n"
+        content += f"- Past medications: {patient_data['medications'].get('past', 'N/A')}\n"
+        content += f"- Drug interactions or known sensitivities: {patient_data['medications'].get('interactions', 'N/A')}\n\n"
+
+        content += f"4. Lifestyle Factors:\n"
+        content += f"- Dietary habits: {patient_data['lifestyle'].get('diet', 'N/A')}\n"
+        content += f"- Exercise routine: {patient_data['lifestyle'].get('exercise', 'N/A')}\n"
+        content += f"- Sleep patterns: {patient_data['lifestyle'].get('sleep', 'N/A')}\n"
+        content += f"- Alcohol use: {patient_data['lifestyle'].get('alcohol', 'N/A')}\n"
+        content += f"- Tobacco use: {patient_data['lifestyle'].get('tobacco', 'N/A')}\n"
+        content += f"- Recreational drug use: {patient_data['lifestyle'].get('drugs', 'N/A')}\n\n"
+
+        content += f"5. Family Medical History:\n"
+        content += f"- Genetic conditions: {patient_data['familyHistory'].get('genetic', 'N/A')}\n"
+        content += f"- Family history of chronic illnesses: {patient_data['familyHistory'].get('chronic', 'N/A')}\n\n"
+
+        content += f"6. Immunization Status:\n"
+        content += f"- Vaccination history: {patient_data['immunization'].get('history', 'N/A')}\n"
+        content += f"- Recent vaccinations: {patient_data['immunization'].get('recent', 'N/A')}\n"
+        content += f"- Travel history and vaccines related to travel: {patient_data['immunization'].get('travel', 'N/A')}\n\n"
+
+        content += f"7. Symptoms/Presenting Concerns:\n"
+        content += f"- Primary complaint: {patient_data['symptoms'].get('primary', 'N/A')}\n"
+        content += f"- Duration of symptoms: {patient_data['symptoms'].get('duration', 'N/A')}\n"
+        content += f"- Severity of symptoms: {patient_data['symptoms'].get('severity', 'N/A')}\n"
+        content += f"- Associated symptoms: {patient_data['symptoms'].get('associated', 'N/A')}\n"
+        content += f"- Pain level: {patient_data['symptoms'].get('painLevel', 'N/A')}\n\n"
+
+        content += f"8. Vital Signs:\n"
+        content += f"- Blood pressure: {patient_data['vitals'].get('bloodPressure', 'N/A')}\n"
+        content += f"- Heart rate: {patient_data['vitals'].get('heartRate', 'N/A')}\n"
+        content += f"- Body temperature: {patient_data['vitals'].get('temperature', 'N/A')}\n"
+        content += f"- Respiratory rate: {patient_data['vitals'].get('respiratoryRate', 'N/A')}\n\n"
+
+        content += f"9. Test Results:\n"
+        content += f"- Recent blood tests: {patient_data['testResults'].get('blood', 'N/A')}\n"
+        content += f"- Imaging results: {patient_data['testResults'].get('imaging', 'N/A')}\n"
+        content += f"- Urine/stool analysis: {patient_data['testResults'].get('urineStool', 'N/A')}\n"
+        content += f"- Other diagnostic results: {patient_data['testResults'].get('other', 'N/A')}\n\n"
+
+        content += f"10. Allergies/Sensitivities:\n"
+        content += f"- Food allergies: {patient_data['allergiesSensitivities'].get('food', 'N/A')}\n"
+        content += f"- Environmental allergens: {patient_data['allergiesSensitivities'].get('environmental', 'N/A')}\n"
+        content += f"- Drug allergies: {patient_data['allergiesSensitivities'].get('drug', 'N/A')}\n\n"
+
+        content += f"11. Reproductive Health (if relevant):\n"
+        content += f"- Pregnancy status: {patient_data['reproductive'].get('pregnancy', 'N/A')}\n"
+        content += f"- Menstrual cycle details: {patient_data['reproductive'].get('menstrual', 'N/A')}\n"
+        content += f"- Contraception use: {patient_data['reproductive'].get('contraception', 'N/A')}\n"
+        content += f"- Fertility concerns: {patient_data['reproductive'].get('fertility', 'N/A')}\n\n"
+
+        content += f"12. Mental and Cognitive Health:\n"
+        content += f"- Mood changes: {patient_data['mentalHealth'].get('mood', 'N/A')}\n"
+        content += f"- Memory issues: {patient_data['mentalHealth'].get('memory', 'N/A')}\n"
+        content += f"- Cognitive impairments: {patient_data['mentalHealth'].get('cognitive', 'N/A')}\n"
+        content += f"- Stress and anxiety levels: {patient_data['mentalHealth'].get('stress', 'N/A')}\n\n"
+
+        content += f"13. Social and Environmental Factors:\n"
+        content += f"- Living conditions: {patient_data['social'].get('living', 'N/A')}\n"
+        content += f"- Work environment: {patient_data['social'].get('work', 'N/A')}\n"
+        content += f"- Pets: {patient_data['social'].get('pets', 'N/A')}\n\n"
+
+        content += f"14. Insurance and Healthcare Preferences:\n"
+        content += f"- Insurance status: {patient_data['insurance'].get('status', 'N/A')}\n"
+        content += f"- Preferred healthcare facilities: {patient_data['insurance'].get('facilities', 'N/A')}\n"
+        content += f"- Past interactions with healthcare systems: {patient_data['insurance'].get('interactions', 'N/A')}\n"
+
+        # 将格式化的内容写入文件
+        with open(file_path, 'w') as file:
+            file.write(content)
+
+        return {'message': 'Patient persona saved successfully!', 'file_path': file_path}, 200
 if __name__ == '__main__':
     app.run(debug=True)
