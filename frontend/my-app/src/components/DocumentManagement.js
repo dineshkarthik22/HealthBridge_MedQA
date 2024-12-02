@@ -12,13 +12,6 @@ const DocumentManagement = () => {
       
       <div className="document-grid">
         <div className="document-section">
-          <h2>PDF Documents</h2>
-          <div className="card">
-            <PDFUpload />
-          </div>
-        </div>
-        
-        <div className="document-section">
           <h2>Database Management</h2>
           <div className="card">
             <UploadDatabase />
