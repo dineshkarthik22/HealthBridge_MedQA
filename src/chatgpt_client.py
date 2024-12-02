@@ -3,7 +3,7 @@ from openai import OpenAI
 from typing import List, Dict, Optional
 
 # Configuration
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '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')  # Set this via environment variable for security
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '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')  # Set this via environment variable for security
 
 # System prompt that can be modified as needed
 SYSTEM_PROMPT = """
