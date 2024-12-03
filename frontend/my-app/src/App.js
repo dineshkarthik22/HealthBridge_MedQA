@@ -1,8 +1,6 @@
 // src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
-import PDFUpload from './components/PDFUpload';
-import UploadDatabase from './components/UploadDatabase';
 import VoiceInputWithResponse from './components/VoiceInputWithResponse';
 import PatientPersonaForm from './components/PatientPersonaForm';
 import DocumentManagement from './components/DocumentManagement';

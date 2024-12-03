@@ -1,5 +1,4 @@
 import React from 'react';
-import PDFUpload from './PDFUpload';
 import UploadDatabase from './UploadDatabase';
 
 const DocumentManagement = () => {
@@ -7,7 +6,7 @@ const DocumentManagement = () => {
     <div className="main-content">
       <div className="page-header">
         <h1>Document Management</h1>
-        <p>Upload and manage medical documents and databases</p>
+        <p>Add documents to database by pasting any article from Cleveland Clinic</p>
       </div>
       
       <div className="document-grid">

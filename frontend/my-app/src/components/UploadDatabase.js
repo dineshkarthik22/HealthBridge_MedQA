@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './UploadDatabase.css';
 
 const UploadDatabase = () => {
   const [url, setUrl] = useState('');
@@ -33,14 +34,20 @@ const UploadDatabase = () => {
   };
 
   return (
-    <div>
+    <div className="upload-database-container">
       <input
         type="text"
-        placeholder="Enter database URL"
+        placeholder="Enter Cleveland Clinic webpage URL"
         value={url}
         onChange={handleUrlChange}
+        className="url-input"
       />
-      <button onClick={handleUpload}>Submit URL</button>
+      <button 
+        onClick={handleUpload}
+        className="upload-button"
+      >
+        Add document
+      </button>
     </div>
   );
 };
