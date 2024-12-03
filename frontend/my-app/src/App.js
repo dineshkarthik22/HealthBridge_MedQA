@@ -1,29 +1,33 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, NavLink, useNavigate } from 'react-router-dom';
 import VoiceInputWithResponse from './components/VoiceInputWithResponse';
 import PatientPersonaForm from './components/PatientPersonaForm';
 import DocumentManagement from './components/DocumentManagement';
 import './App.css';
 
-const Navigation = () => (
-  <nav className="main-nav">
-    <div className="nav-brand">
-      <h2>HealthBridge MedQA</h2>
-    </div>
-    <div className="nav-links">
-      <NavLink to="/" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} end>
-        Home
-      </NavLink>
-      <NavLink to="/documents" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-        Documents
-      </NavLink>
-      <NavLink to="/add-persona" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-        Add Patient
-      </NavLink>
-    </div>
-  </nav>
-);
+const Navigation = () => {
+  const navigate = useNavigate();
+  
+  return (
+    <nav className="main-nav">
+      <div className="nav-brand">
+        <h2 onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>HealthBridge MedQA</h2>
+      </div>
+      <div className="nav-links">
+        <NavLink to="/" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"} end>
+          Home
+        </NavLink>
+        <NavLink to="/documents" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+          Documents
+        </NavLink>
+        <NavLink to="/add-persona" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+          Add Patient
+        </NavLink>
+      </div>
+    </nav>
+  );
+};
 
 const Home = () => (
   <div className="App">
